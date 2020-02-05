@@ -2,7 +2,7 @@
 
 namespace Kevocode\LaravelCore;
 
-class ServiceProvider extends \Illuminate\Support\ServiceProvider
+class LaravelCoreServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     /**
      * Bootstrap services.
@@ -11,6 +11,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function boot()
     {
+        // Loading package config
+        $this->publishes([
+            __DIR__ . '/config/app.php' => config_path('lcore.php'),
+            __DIR__ . '/public' => public_path('vendor/lcore'),
+            __DIR__ . '/resources/views' => resource_path('views/vendor/lcore'),
+            __DIR__ . '/resources/lang' => resource_path('lang/lcore')
+        ], 'lcore');
+    
         // Loading routes config
         $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
 
@@ -25,14 +33,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // Loading views
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'lcore');
-    
-        // Loading package config
-        $this->publishes([
-            __DIR__ . '/config/app.php' => config_path('lcore.php'),
-            __DIR__ . '/public' => public_path('vendor/lcore'),
-            __DIR__ . '/resources/views' => resource_path('views/vendor/lcore'),
-            __DIR__ . '/resources/lang' => resource_path('lang/lcore')
-        ], 'lcore');
     }
 
     /**
@@ -49,8 +49,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         );
 
         // Loading others service providers
-        $this->app->register(\MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class);
-        $this->app->register(\Appstract\BladeDirectives\BladeDirectivesServiceProvider::class);
+        // $this->app->register(\MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class);
+        // $this->app->register(\Appstract\BladeDirectives\BladeDirectivesServiceProvider::class);
 
         // Opciones específicas para las vistas
         view()->share('breadcrumbs', [
