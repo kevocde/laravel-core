@@ -12,7 +12,7 @@ $breadcrumbs = array_merge($breadcrumbs, [
 ]);
 
 @endphp
-@extends('lcore::layouts.app')
+@extends(config('lcore.app-layout'))
 
 @section('content')
     <div class="card">
