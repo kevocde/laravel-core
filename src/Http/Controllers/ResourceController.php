@@ -39,7 +39,7 @@ class ResourceController extends Controller
      * 
      * @var string
      */
-    private $viewsPackage = null;
+    private $viewsPackage = 'lcore';
 
     /**
      * Nombre del directorio que contendrá las vistas para el controlador
@@ -59,7 +59,7 @@ class ResourceController extends Controller
         }
         if ($this->breadcrumbs !== false && empty($breadcrumbs)) {
             $this->breadcrumbs = [
-                ['label' => __('pdfdoc::messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
+                ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
             ];
         }
         view()->share('breadcrumbs', array_merge(view()->shared('breadcrumbs'), $this->breadcrumbs));
@@ -92,7 +92,7 @@ class ResourceController extends Controller
     {
         $parts = [$this->viewsDir, $view];
         $viewsPackage = !empty($this->viewsPackage) ? $this->viewsPackage . '::' : '';
-        if (!$withRoute && !view()->exists($viewsPackage . implode('.', $parts))) {
+        if (!$withRoute && !view()->exists(implode('.', $parts))) {
             $parts[0] = 'commons';
         }
         return ($withRoute && empty($viewPackage) ? '' : $viewsPackage) . implode('.', $parts);

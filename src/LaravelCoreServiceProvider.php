@@ -49,8 +49,8 @@ class LaravelCoreServiceProvider extends \Illuminate\Support\ServiceProvider
         );
 
         // Loading others service providers
-        // $this->app->register(\MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class);
-        // $this->app->register(\Appstract\BladeDirectives\BladeDirectivesServiceProvider::class);
+        $this->app->register(\MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class);
+        $this->app->register(\Appstract\BladeDirectives\BladeDirectivesServiceProvider::class);
 
         // Opciones específicas para las vistas
         view()->share('breadcrumbs', [

@@ -3,7 +3,7 @@ use Symfony\Component\Inflector\Inflector;
 
 $regularTitle = Inflector::singularize($model::getModelName());
 $regularTitle = is_array($regularTitle) ? end($regularTitle) : $regularTitle;
-$title = __('lcore::messages.' . $model::getModelName());
+$title = __('messages.' . $model::getModelName());
 $nameParam = Inflector::singularize($routeName);
 $nameParam = str_replace('-', '_', is_array($nameParam) ? end($nameParam) : $nameParam);
 
@@ -20,7 +20,7 @@ $breadcrumbs = array_merge($breadcrumbs, [
             <div id="{{ $routeName }}-gridview" class="w-100">
                 <div class="row">
                     <div class="col-12 mb-2 d-flex justify-content-end">
-                        <a href="{{ route($routeName . '.create') }}" class="btn btn-success mr-1">{{ __('lcore::messages.commons.createtitle', ['title' => mb_strtolower(__('lcore::messages.' . $regularTitle))]) }}</a>
+                        <a href="{{ route($routeName . '.create') }}" class="btn btn-success mr-1">{{ __('lcore::messages.commons.createtitle', ['title' => mb_strtolower(__('messages.' . $regularTitle))]) }}</a>
                         @if($model->showDeleted)
                             <a href="{{ route($routeName . '.index', [$model::getModelName() . '[' . $model->getDeletedAtColumn() . ']' => false]) }}" class="btn btn-outline-secondary mr-1">
                                 {{ __('lcore::messages.commons.hidedeleted') }}
