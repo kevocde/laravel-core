@@ -11,17 +11,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function boot()
     {
-        // Loading package config
-        $this->publishes([
-            __DIR__ . '/config/app.php' => config_path('lcore.php'),
-            __DIR__ . '/public' => public_path('vendor/lcore')
-        ], 'lcore');
-
-        // Publicando los assets
-        $this->publishes([
-            
-        ], 'lcore');
-
         // Loading routes config
         $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
 
@@ -36,6 +25,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // Loading views
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'lcore');
+    
+        // Loading package config
+        $this->publishes([
+            __DIR__ . '/config/app.php' => config_path('lcore.php'),
+            __DIR__ . '/public' => public_path('vendor/lcore'),
+            __DIR__ . '/resources/views' => resource_path('views/vendor/lcore'),
+            __DIR__ . '/resources/lang' => resource_path('lang/lcore')
+        ], 'lcore');
     }
 
     /**

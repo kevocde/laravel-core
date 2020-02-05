@@ -227,7 +227,6 @@ class ResourceController extends Controller
      */
     public function destroy($id)
     {
-        // dd($id);
         $this->modelClass::destroy($id);
         return redirect()->route($this->getViewUri('index', true));
     }
