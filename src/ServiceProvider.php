@@ -13,13 +13,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         // Loading package config
         $this->publishes([
-            __DIR__ . '/config/app.php' => config_path('lcore.php')
-        ]);
+            __DIR__ . '/config/app.php' => config_path('lcore.php'),
+            __DIR__ . '/public' => public_path('vendor/lcore')
+        ], 'lcore');
 
         // Publicando los assets
         $this->publishes([
-            __DIR__ . '/public' => public_path('vendor/lcore')
-        ], 'public');
+            
+        ], 'lcore');
 
         // Loading routes config
         $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
