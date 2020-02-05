@@ -92,10 +92,11 @@ class ResourceController extends Controller
     {
         $parts = [$this->viewsDir, $view];
         $viewsPackage = !empty($this->viewsPackage) ? $this->viewsPackage . '::' : '';
-        if (!$withRoute && !view()->exists(implode('.', $parts))) {
+        $viewExist = view()->exists(implode('.', $parts));
+        if (!$withRoute && !$viewExist) {
             $parts[0] = 'commons';
         }
-        return ($withRoute && empty($viewPackage) ? '' : $viewsPackage) . implode('.', $parts);
+        return ((($withRoute && empty($viewPackage)) || $viewExist) ? '' : $viewsPackage) . implode('.', $parts);
     }
 
     /**
