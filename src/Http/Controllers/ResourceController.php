@@ -39,14 +39,14 @@ class ResourceController extends Controller
      * 
      * @var string
      */
-    private $viewsPackage = 'lcore';
+    protected $viewsPackage = 'lcore';
 
     /**
      * Nombre del directorio que contendrá las vistas para el controlador
      *
      * @var string
      */
-    private $viewsDir = null;
+    protected $viewsDir = null;
 
     /**
      * Sobreescritura del constructor
