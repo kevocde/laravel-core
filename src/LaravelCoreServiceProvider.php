@@ -10,6 +10,7 @@ class LaravelCoreServiceProvider extends \Kevocode\LaravelCore\BaseServiceProvid
     protected $withRoutes = false;
     protected $withMigrations = false;
     protected $withFactories = false;
+    protected $baseDir = __DIR__;
 
     /**
      * Get the services provided by the provider.

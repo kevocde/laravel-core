@@ -61,11 +61,18 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
     protected $withPublicAssets = true;
 
     /**
+     * Ruta base donde se hereda el ServiceProvider base
+     * 
+     * @var string
+     */
+    protected $dir = __DIR__;
+
+    /**
      * Retorna el nombre del paquete
      *
      * @return string
      */
-    public function getName()
+    protected function getName()
     {
         if ($this->name === null) {
             $this->name = time() . rand(11, 99);
@@ -84,23 +91,23 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // Plublicando configuraciones y recursos
         $publishes = [
-            __DIR__ . '/config/app.php' => config_path($name . '.php')
+            $this->baseDir . '/config/app.php' => config_path($name . '.php')
         ];
-        if ($this->withTranslations) $publishes[__DIR__ . '/resources/lang'] = resource_path('views/vendor/' . $name);
-        if ($this->withViews) $publishes[__DIR__ . '/resources/views'] = resource_path('lang/' . $name);
-        if ($this->withPublicAssets) $publishes[__DIR__ . '/public'] = public_path('vendor/' . $name);
+        if ($this->withTranslations) $publishes[$this->baseDir . '/resources/lang'] = resource_path('views/vendor/' . $name);
+        if ($this->withViews) $publishes[$this->baseDir . '/resources/views'] = resource_path('lang/' . $name);
+        if ($this->withPublicAssets) $publishes[$this->baseDir . '/public'] = public_path('vendor/' . $name);
         $this->publishes($publishes, $name);
 
         // Cargando rutas
-        if ($this->withRoutes) $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
+        if ($this->withRoutes) $this->loadRoutesFrom($this->baseDir . '/routes/web.php');
         // Cargando migraciones
-        if ($this->withMigrations) $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        if ($this->withMigrations) $this->loadMigrationsFrom($this->baseDir . '/database/migrations');
         // Cargando sembradores de la base de datos
-        if ($this->withFactories) $this->loadFactoriesFrom(__DIR__.'/database/factories');
+        if ($this->withFactories) $this->loadFactoriesFrom($this->baseDir.'/database/factories');
         // Cargando lenguaje
-        if ($this->withTranslations) $this->loadTranslationsFrom(__DIR__ . '/resources/lang', $name);
+        if ($this->withTranslations) $this->loadTranslationsFrom($this->baseDir . '/resources/lang', $name);
         // Cargando vistas
-        if ($this->withViews) $this->loadViewsFrom(__DIR__ . '/resources/views', $name);
+        if ($this->withViews) $this->loadViewsFrom($this->baseDir . '/resources/views', $name);
     }
 
     /**
@@ -113,7 +120,7 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
         $name = $this->getName();
 
         // Cargando la configuración
-        $this->mergeConfigFrom(__DIR__ . '/config/app.php', $name);
+        $this->mergeConfigFrom($this->baseDir . '/config/app.php', $name);
         // Opciones específicas para las vistas
         if ($this->withViews) {
             static::defineViewVariables([
