@@ -68,6 +68,13 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
     protected $baseDir = __DIR__;
 
     /**
+     * Listado de proveedores adicionales a registrar
+     * 
+     * @var array
+     */
+    protected $additionalProviders = [];
+
+    /**
      * Retorna el nombre del paquete
      *
      * @return string
@@ -127,6 +134,10 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
                 'breadcrumbs' => ['label' => 'Inicio', 'link' => 'home'],
                 'title' => config($name . '.name', $name)
             ]);
+        }
+
+        foreach ($this->additionalProviders as $providerClass) {
+            $this->app->register($providerClass);
         }
     }
 

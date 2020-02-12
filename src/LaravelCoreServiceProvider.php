@@ -11,17 +11,8 @@ class LaravelCoreServiceProvider extends \Kevocode\LaravelCore\BaseServiceProvid
     protected $withMigrations = false;
     protected $withFactories = false;
     protected $baseDir = __DIR__;
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [
-            \MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class,
-            \Appstract\BladeDirectives\BladeDirectivesServiceProvider::class
-        ];
-    }
+    protected $addicionalProvider = [
+        \MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class,
+        \Appstract\BladeDirectives\BladeDirectivesServiceProvider::class
+    ];
 }
