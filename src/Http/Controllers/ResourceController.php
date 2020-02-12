@@ -128,11 +128,7 @@ class ResourceController extends Controller
     protected function getRoute($action)
     {
         $parts = [$this->viewsDir, $action];
-        $viewUri = '';
-        if ($this->packageName !== null) {
-            $viewUri .= $this->packageName . '.';
-        }
-        return $viewUri . implode('.', $parts);
+        return implode('.', $parts);
     }
 
     /**
