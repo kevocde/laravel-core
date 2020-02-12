@@ -118,8 +118,7 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
         if ($this->withViews) {
             static::defineViewVariables([
                 'breadcrumbs' => ['label' => 'Inicio', 'link' => 'home'],
-                'title' => config($name . '.name', $name),
-                $name => $this
+                'title' => config($name . '.name', $name)
             ]);
         }
     }

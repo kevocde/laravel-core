@@ -9,9 +9,9 @@ use Symfony\Component\Inflector\Inflector;
 
 /**
  * Controlador base para los CRUDs
- * 
+ *
  * @package App\Http\Controllers
- * 
+ *
  * @author Kevin Daniel Guzmán Delgadillo <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
  * @since 0.0.1
@@ -23,20 +23,20 @@ class ResourceController extends Controller
      *
      * @var \Illuminate\Database\Eloquent\Model
      */
-    public $modelClass = null;
+    protected $modelClass = null;
 
     /**
      * Breadcrumbs base del controlador
-     * 
+     *
      * @return array|boolean
      */
-    public $breadcrumbs = [];
+    protected $breadcrumbs = [];
 
     /**
      * Nombre del paquete específicos de las vistas en caso de ser necesario.
      * Si estan directamente en la aplicación no es necesario definirlo, si está en un paquete
      * con vistas específicas es necesario indicarle el nombre del paquete de vistas.
-     * 
+     *
      * @var string
      */
     protected $viewsPackage = 'lcore';
@@ -49,14 +49,30 @@ class ResourceController extends Controller
     protected $viewsDir = null;
 
     /**
+     * Nombre del paquete core
+     *
+     * @var string
+     */
+    protected $corePackageName = 'lcore';
+
+    /**
+     * Nombre del paquete donde está el proyecto, si es nulo significa que es la aplicación directamente
+     *
+     * @var string
+     */
+    protected $packageName = null;
+
+    /**
      * Sobreescritura del constructor
      */
     public function __construct()
     {
+        // @todo Poner esto en la configuración del paquete
         App::setLocale('es');
-        if (empty($this->viewsDir)) {
-            $this->viewsDir = $this->createViewDir();
-        }
+
+        // Registro de carpeta de vistas
+        if ($this->viewsDir === null) $this->viewsDir = $this->createViewDir();
+        // Registro de breadcrumbs
         if ($this->breadcrumbs !== false && empty($breadcrumbs)) {
             $this->breadcrumbs = [
                 ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
@@ -85,18 +101,38 @@ class ResourceController extends Controller
      *
      * @param string $view Uri de la vista
      * @param boolean $withRoute determina cuando la ruta será generada no para vistas si no para enrutador
-     * 
+     *
      * @return string
      */
-    protected function getViewUri($view, $withRoute = false)
+    protected function getViewUri($view)
     {
+        $viewUri = '';
         $parts = [$this->viewsDir, $view];
-        $viewsPackage = !empty($this->viewsPackage) ? $this->viewsPackage . '::' : '';
-        $viewExist = view()->exists(implode('.', $parts));
-        if (!$withRoute && !$viewExist) {
-            $parts[0] = 'commons';
+        if ($this->packageName !== null) {
+            $viewUri .= $this->packageName . '::';
         }
-        return ((($withRoute && empty($viewPackage)) || $viewExist) ? '' : $viewsPackage) . implode('.', $parts);
+        $viewExist = view()->exists($viewUri . implode('.', $parts));
+        if ($viewExist) {
+            $viewUri = $viewUri . implode('.', $parts);
+        } else {
+            $viewUri = $this->corePackageName . '::commons.' . end($parts);
+        }
+        return $viewUri;
+    }
+
+    /**
+     * Retorna las rutas según con el nombre del recurso
+     *
+     * @return string
+     */
+    protected function getRoute($action)
+    {
+        $parts = [$this->viewsDir, $action];
+        $viewUri = '';
+        if ($this->packageName !== null) {
+            $viewUri .= $this->packageName . '.';
+        }
+        return $viewUri . implode('.', $parts);
     }
 
     /**
@@ -155,14 +191,14 @@ class ResourceController extends Controller
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
             $return = redirect()
-                ->route($this->getViewUri('create', true))
+                ->route($this->getRoute('create'))
                 ->withErrors($validator)
                 ->withInput();
         } else {
             $modelObject = new $this->modelClass;
             $modelObject->fill($request->post());
             $modelObject->save();
-            $return = redirect()->route($this->getViewUri('index', true));
+            $return = redirect()->route($this->getRoute('index'));
         }
         return $return;
     }
@@ -209,13 +245,13 @@ class ResourceController extends Controller
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
             $return = redirect()
-                ->route($this->getViewUri('edit', true), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
+                ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
                 ->withErrors($validator)
                 ->withInput();
         } else {
             $modelObject->fill($request->all());
             $modelObject->save();
-            $return = redirect()->route($this->getViewUri('index', true));
+            $return = redirect()->route($this->getRoute('index'));
         }
         return $return;
     }
@@ -229,7 +265,7 @@ class ResourceController extends Controller
     public function destroy($id)
     {
         $this->modelClass::destroy($id);
-        return redirect()->route($this->getViewUri('index', true));
+        return redirect()->route($this->getRoute('index'));
     }
 
     /**
@@ -242,7 +278,7 @@ class ResourceController extends Controller
     {
         $modelObject = $this->modelClass::withTrashed()->find($id);
         $modelObject->restore();
-        return redirect()->route($this->getViewUri('index', true));
+        return redirect()->route($this->getRoute('index'));
     }
 
     /**
