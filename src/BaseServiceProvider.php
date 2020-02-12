@@ -65,7 +65,7 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
      * 
      * @var string
      */
-    protected $dir = __DIR__;
+    protected $baseDir = __DIR__;
 
     /**
      * Retorna el nombre del paquete
