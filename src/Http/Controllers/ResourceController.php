@@ -104,7 +104,7 @@ class ResourceController extends Controller
      *
      * @return string
      */
-    protected function getViewUri($view)
+    protected function getViewUri($view, $withCommonCore = true)
     {
         $viewUri = '';
         $parts = [$this->viewsDir, $view];
@@ -112,7 +112,7 @@ class ResourceController extends Controller
             $viewUri .= $this->packageName . '::';
         }
         $viewExist = view()->exists($viewUri . implode('.', $parts));
-        if ($viewExist) {
+        if (!$withCommonCore || $viewExist) {
             $viewUri = $viewUri . implode('.', $parts);
         } else {
             $viewUri = $this->corePackageName . '::commons.' . end($parts);
@@ -145,7 +145,7 @@ class ResourceController extends Controller
             $this->getViewUri($view),
             array_merge([
                 'routeName' => static::getBaseRouteName(),
-                'viewsDir' => $this->viewsDir
+                'viewsDir' => $this->getViewUri('', false)
             ], $data),
             $mergeData
         );
