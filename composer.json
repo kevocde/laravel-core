@@ -13,7 +13,7 @@
     "require": {
         "php": "^7.2",
         "symfony/inflector": "^5.0",
-        "marvinlabs/laravel-html-bootstrap-4": "^1.7",
+        "marvinlabs/laravel-html-bootstrap-4": "^1.7"
     },
     "require-dev": {
         "symfony/var-dumper": "^5.1@dev"
