@@ -164,7 +164,7 @@ class ResourceController extends Controller
 
     /**
      * Muestra el formulario para la creación de un registro
-     *
+     * 
      * @return \Illuminate\Http\Response
      */
     public function create()
@@ -186,15 +186,19 @@ class ResourceController extends Controller
         $return = null;
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
-            $return = redirect()
-                ->route($this->getRoute('create'))
-                ->withErrors($validator)
-                ->withInput();
+            $return = $this->redirect(
+                redirect()
+                    ->route($this->getRoute('create'))
+                    ->withErrors($validator)
+                    ->withInput()
+            );
         } else {
             $modelObject = new $this->modelClass;
             $modelObject->fill($request->post());
             $modelObject->save();
-            $return = redirect()->route($this->getRoute('index'));
+            $return = $this->redirect(
+                redirect()->route($this->getRoute('index'))
+            );
         }
         return $return;
     }
@@ -240,14 +244,18 @@ class ResourceController extends Controller
         $return = null;
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
-            $return = redirect()
-                ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
-                ->withErrors($validator)
-                ->withInput();
+            $return = $this->redirect(
+                redirect()
+                    ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
+                    ->withErrors($validator)
+                    ->withInput()
+            );
         } else {
             $modelObject->fill($request->all());
             $modelObject->save();
-            $return = redirect()->route($this->getRoute('index'));
+            $return = $this->redirect(
+                redirect()->route($this->getRoute('index'))
+            );
         }
         return $return;
     }
@@ -261,7 +269,9 @@ class ResourceController extends Controller
     public function destroy($id)
     {
         $this->modelClass::destroy($id);
-        return redirect()->route($this->getRoute('index'));
+        return $this->redirect(
+            redirect()->route($this->getRoute('index'))
+        );
     }
 
     /**
@@ -274,7 +284,9 @@ class ResourceController extends Controller
     {
         $modelObject = $this->modelClass::withTrashed()->find($id);
         $modelObject->restore();
-        return redirect()->route($this->getRoute('index'));
+        return $this->redirect(
+            redirect()->route($this->getRoute('index'))
+        );
     }
 
     /**
@@ -286,5 +298,22 @@ class ResourceController extends Controller
     {
         $route = explode('.', Route::currentRouteName());
         return reset($route);
+    }
+
+    /**
+     * Realiza la redirección respectiva tomando en cuenta el parámetros back-url en caso de ser necesario
+     * 
+     * @param \Illuminate\Http\Response
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function redirect($response)
+    {
+        $redirectResponse = $response;
+        $backUrl = request('back-url', null);
+        if ($backUrl !== null) {
+            $redirectResponse = redirect($backUrl);
+        }
+        return $redirectResponse;
     }
 }
