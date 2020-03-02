@@ -77,6 +77,8 @@ class ResourceController extends Controller
             $this->breadcrumbs = [
                 ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
             ];
+        } else {
+            $this->breadcrumbs = [];
         }
         view()->share('breadcrumbs', array_merge(view()->shared('breadcrumbs'), $this->breadcrumbs));
     }

@@ -89,6 +89,23 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
     /**
      * Retorna un listado con todos los registros de la base de datos en formato llave => valor
      * 
+     * @param boolean $withCollection Determina si se devolverá el valor como una colección llave valor
+     * o como una colección con cada una de las intancias de la consulta
+     * @param array $whereFilters Arreglo con las sentencias para cada consulta de dos formas diferentes:
+     * 1. llamada a sentencia sin específicar método:
+     * ```
+     * [
+     *     ['nombre_columna', 'operador', 'valor'],
+     *     ...
+     * ]
+     * ```
+     * 2. Llamada a sentencia específicando el método:
+     * ```
+     * [
+     *     'nombre_metodo' => [...parámetros de función]
+     * ]
+     * ```
+     * 
      * @return array
      */
     public static function getData($withCollection = true, $whereFilters = [], $listOrders = [])
@@ -98,10 +115,21 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
         $instance = null;
         $descriptiveColumn = static::getDescriptiveColumn();
         $listOrders = empty($listOrders) ? [[$descriptiveColumn, 'asc']] : $listOrders;
-        foreach ($whereFilters as $filter) {
-            if (empty($instance)) $instance = static::where($filter[0], $filter[1], $filter[0]);
-            else $instance->where($filter[0], $filter[1], $filter[0]);
+        // Añadiendo filtros
+        // Determinando si se está específicando el tipo de método o no
+        if (array_keys($whereFilters) === range(0, count($whereFilters)-1)) {
+            $newWhereFilters = [];
+            foreach ($whereFilters as $filter) {
+                $newWhereFilters['where'] = $filter;
+            }
+            $whereFilters = $newWhereFilters;
         }
+        // Aplicando los filtros
+        foreach ($whereFilters as $key => $filter) {
+            if (empty($instance)) $instance = forward_static_call_array([static::class, $key], $filter);
+            else call_user_func([$instance, $key], $filter);
+        }
+        // dd($instance, $whereFilters);
         foreach ($listOrders as $order) {
             if (empty($instance)) $instance = static::orderBy($order[0], $order[1]);
             else $instance->orderBy($order[0], $order[1]);
