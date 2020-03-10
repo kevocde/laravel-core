@@ -70,6 +70,23 @@ class ResourceController extends Controller
     protected $isApi = false;
 
     /**
+     * Define el ResourceCollection que será usuado para formatear las colecciones de datos,
+     * en caso de no definirse se procederá a hacerse la devuelta de la información tal y como el modelo lo define.
+     * 
+     * @var string
+     */
+    protected $resourceCollectionClass = null;
+
+    /**
+     * Define la clase tipo JsonResource que se usará para formatear los atributos devueltos para un modelo,
+     * En el caso la acción index para listar todos los registros no se tendrá en cuenta esta propieda, se tendrá en cuenta
+     * solamente la pripiedad $resourceCollectionClass si esta existe
+     * 
+     * @var string
+     */
+    protected $collectClass = null;
+
+    /**
      * Sobreescritura del constructor
      */
     public function __construct()
@@ -171,7 +188,7 @@ class ResourceController extends Controller
     public function index(Request $request)
     {
         $dataModel = $this->modelClass::search($request);
-        return $this->isApi ? $dataModel : $this->view('index', $dataModel);
+        return $this->isApi ? $this->getFormattedResponse($dataModel['items']) : $this->view('index', $dataModel);
     }
 
     /**
@@ -213,7 +230,7 @@ class ResourceController extends Controller
             $modelObject->fill($request->post());
             $modelObject->save();
             if ($this->isApi) {
-                $return = response()->json($modelObject, 201);
+                $return = response()->json($this->getFormattedResponse($modelObject), 201);
             } else {
                 $return = $this->redirect(
                     redirect()->route($this->getRoute('index'))
@@ -232,7 +249,7 @@ class ResourceController extends Controller
     public function show($id)
     {
         $modelObject = $this->modelClass::find($id);
-        return $this->isApi ? $modelObject : $this->view('show', ['model' => $modelObject]);
+        return $this->isApi ? $this->getFormattedResponse($modelObject) : $this->view('show', ['model' => $modelObject]);
     }
 
     /**
@@ -276,7 +293,7 @@ class ResourceController extends Controller
             $modelObject->fill($request->all());
             $modelObject->save();
             if ($this->isApi) {
-                $return = response()->json($modelObject, 200);
+                $return = response()->json($this->getFormattedResponse($modelObject), 200);
             } else {
                 $return = $this->redirect(
                     redirect()->route($this->getRoute('index'))
@@ -337,7 +354,7 @@ class ResourceController extends Controller
     /**
      * Realiza la redirección respectiva tomando en cuenta el parámetros back-url en caso de ser necesario
      * 
-     * @param \Illuminate\Http\Response
+     * @param \Illuminate\Http\Response $response
      * 
      * @return \Illuminate\Http\Response
      */
@@ -349,5 +366,24 @@ class ResourceController extends Controller
             $redirectResponse = redirect($backUrl);
         }
         return $redirectResponse;
+    }
+
+    /**
+     * Retorna la respuesta aplicando (o no) las clases formateadoras definidas en las propiedades
+     * $collectClass y $resourceCollectionClass
+     * 
+     * @param \Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model|\Illuminate\Pagination\LengthAwarePaginator $data
+     * @return \Illuminate\Support\Collection|\Illuminate\Pagination\Paginator
+     */
+    public function getFormattedResponse($data)
+    {
+        if (!is_null($this->resourceCollectionClass) &&
+            (is_a($data, \Illuminate\Support\Collection::class)
+            || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class))) {
+            $data = new $this->resourceCollectionClass($data);
+        } elseif (!is_null($this->collectClass)) {
+            $data = new $this->collectClass($data);
+        }
+        return $data;
     }
 }
