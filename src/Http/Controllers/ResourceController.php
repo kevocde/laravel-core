@@ -377,12 +377,15 @@ class ResourceController extends Controller
      */
     public function getFormattedResponse($data)
     {
-        if (!is_null($this->resourceCollectionClass) &&
-            (is_a($data, \Illuminate\Support\Collection::class)
-            || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class))) {
+        $isCollectionOrPaginator = (is_a($data, \Illuminate\Support\Collection::class)
+            || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class));
+        if (!is_null($this->resourceCollectionClass) && $isCollectionOrPaginator) {
             $data = new $this->resourceCollectionClass($data);
-        } elseif (!is_null($this->collectClass)) {
+        } elseif (!$isCollectionOrPaginator && !is_null($this->collectClass)) {
             $data = new $this->collectClass($data);
+        } elseif (!$isCollectionOrPaginator) {
+            // Esto se hace con el fín de que la estructura de la respuesta siempre sea compatible se utilice o no
+            $data = ['data' => $data];
         }
         return $data;
     }
