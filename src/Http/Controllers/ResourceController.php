@@ -63,6 +63,13 @@ class ResourceController extends Controller
     protected $packageName = null;
 
     /**
+     * Determina si el controlador será gestinado como un controlador de api rest
+     * 
+     * @var boolean
+     */
+    protected $isApi = false;
+
+    /**
      * Sobreescritura del constructor
      */
     public function __construct()
@@ -70,17 +77,19 @@ class ResourceController extends Controller
         // @todo Poner esto en la configuración del paquete
         App::setLocale('es');
 
-        // Registro de carpeta de vistas
-        if ($this->viewsDir === null) $this->viewsDir = $this->createViewDir();
-        // Registro de breadcrumbs
-        if ($this->breadcrumbs !== false && empty($breadcrumbs)) {
-            $this->breadcrumbs = [
-                ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
-            ];
-        } else {
-            $this->breadcrumbs = [];
+        if (!$this->isApi) {
+            // Registro de carpeta de vistas
+            if ($this->viewsDir === null) $this->viewsDir = $this->createViewDir();
+            // Registro de breadcrumbs
+            if ($this->breadcrumbs !== false && empty($breadcrumbs)) {
+                $this->breadcrumbs = [
+                    ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
+                ];
+            } else {
+                $this->breadcrumbs = [];
+            }
+            view()->share('breadcrumbs', array_merge(view()->shared('breadcrumbs'), $this->breadcrumbs));
         }
-        view()->share('breadcrumbs', array_merge(view()->shared('breadcrumbs'), $this->breadcrumbs));
     }
 
     /**
@@ -161,7 +170,8 @@ class ResourceController extends Controller
      */
     public function index(Request $request)
     {
-        return $this->view('index', $this->modelClass::search($request));
+        $dataModel = $this->modelClass::search($request);
+        return $this->isApi ? $dataModel : $this->view('index', $dataModel);
     }
 
     /**
@@ -188,19 +198,27 @@ class ResourceController extends Controller
         $return = null;
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
-            $return = $this->redirect(
-                redirect()
-                    ->route($this->getRoute('create'))
-                    ->withErrors($validator)
-                    ->withInput()
-            );
+            if ($this->isApi) {
+                $return = response()->json($validator->errors(), 400);
+            } else {
+                $return = $this->redirect(
+                    redirect()
+                        ->route($this->getRoute('create'))
+                        ->withErrors($validator)
+                        ->withInput()
+                );
+            }
         } else {
             $modelObject = new $this->modelClass;
             $modelObject->fill($request->post());
             $modelObject->save();
-            $return = $this->redirect(
-                redirect()->route($this->getRoute('index'))
-            );
+            if ($this->isApi) {
+                $return = response()->json($modelObject, 201);
+            } else {
+                $return = $this->redirect(
+                    redirect()->route($this->getRoute('index'))
+                );
+            }
         }
         return $return;
     }
@@ -214,9 +232,7 @@ class ResourceController extends Controller
     public function show($id)
     {
         $modelObject = $this->modelClass::find($id);
-        return $this->view('show', [
-            'model' => $modelObject
-        ]);
+        return $this->isApi ? $modelObject : $this->view('show', ['model' => $modelObject]);
     }
 
     /**
@@ -246,18 +262,26 @@ class ResourceController extends Controller
         $return = null;
         $validator = $this->modelClass::makeValidator($request);
         if ($validator->fails()) {
-            $return = $this->redirect(
-                redirect()
-                    ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
-                    ->withErrors($validator)
-                    ->withInput()
-            );
+            if ($this->isApi) {
+                $return = response()->json($validator->errors(), 400);
+            } else {
+                $return = $this->redirect(
+                    redirect()
+                        ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
+                        ->withErrors($validator)
+                        ->withInput()
+                );
+            }
         } else {
             $modelObject->fill($request->all());
             $modelObject->save();
-            $return = $this->redirect(
-                redirect()->route($this->getRoute('index'))
-            );
+            if ($this->isApi) {
+                $return = response()->json($modelObject, 200);
+            } else {
+                $return = $this->redirect(
+                    redirect()->route($this->getRoute('index'))
+                );
+            }
         }
         return $return;
     }
@@ -271,9 +295,13 @@ class ResourceController extends Controller
     public function destroy($id)
     {
         $this->modelClass::destroy($id);
-        return $this->redirect(
-            redirect()->route($this->getRoute('index'))
-        );
+        $return = response()->json(null, 204);
+        if (!$this->isApi) {
+            $return = $this->redirect(
+                redirect()->route($this->getRoute('index'))
+            );
+        }
+        return $return;
     }
 
     /**
@@ -286,9 +314,13 @@ class ResourceController extends Controller
     {
         $modelObject = $this->modelClass::withTrashed()->find($id);
         $modelObject->restore();
-        return $this->redirect(
-            redirect()->route($this->getRoute('index'))
-        );
+        $return = response()->json(null, 204);
+        if (!$this->isApi) {
+            $return = $this->redirect(
+                redirect()->route($this->getRoute('index'))
+            );
+        }
+        return $return;
     }
 
     /**
