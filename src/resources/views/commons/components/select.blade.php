@@ -8,7 +8,10 @@ if (!isset($data)) {
 } else {
     $data->prepend('Seleccione ...', '');
 }
-//$newData = $data;
+
+if (isset($inputOptions['required']) && !$inputOptions['required']) {
+    unset($inputOptions['required']);
+}
 @endphp
 {{ html()->div()->attributes(['class' => 'form-group'])->open() }}
 <div class="form-group">
