@@ -98,12 +98,12 @@ class ResourceController extends Controller
             // Registro de carpeta de vistas
             if ($this->viewsDir === null) $this->viewsDir = $this->createViewDir();
             // Registro de breadcrumbs
-            if ($this->breadcrumbs !== false && empty($breadcrumbs)) {
+            if ($this->breadcrumbs !== false && empty($this->breadcrumbs)) {
                 $this->breadcrumbs = [
                     ['label' => __('messages.' . $this->modelClass::getModelName()), 'link' => static::getBaseRouteName() . '.index']
                 ];
             } else {
-                $this->breadcrumbs = [];
+                // $this->breadcrumbs = [];
             }
             view()->share('breadcrumbs', array_merge(view()->shared('breadcrumbs'), $this->breadcrumbs));
         }
