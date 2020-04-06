@@ -17,6 +17,16 @@ return [
         'select' => 'Seleccione',
         'show' => 'Ver',
         'detailsof' => 'Detalle :title: :name',
-        'back' => 'Volver'
+        'back' => 'Volver',
+        'restorealerttitle' => 'Maravilloso',
+        'restorealertcontent' => 'Se ha restaurado el recurso',
+        'deletealerttitle' => 'Maravilloso',
+        'deletealertcontent' => 'Se ha eliminado el recurso',
+        'createalerttitle' => 'Maravilloso',
+        'createalertcontent' => 'El recurso ha sido creado',
+        'updatealerttitle' => 'Maravilloso',
+        'updatealertcontent' => 'El recurso ha sido actualizado',
+        'errorstoretitle' => '¡Oops!',
+        'errorstorecontent' => 'Parece que ha ocurrido un error al almacenar los datos',
     ]
 ];

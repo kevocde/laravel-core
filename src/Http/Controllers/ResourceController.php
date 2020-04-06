@@ -87,6 +87,13 @@ class ResourceController extends Controller
     protected $collectClass = null;
 
     /**
+     * Nombre de la llave que contendrá los mensajes de alertas en la sesión
+     * 
+     * @var string
+     */
+    protected $keySessionMessage = 'alert';
+
+    /**
      * Sobreescritura del constructor
      */
     public function __construct()
@@ -248,11 +255,20 @@ class ResourceController extends Controller
         $modelObject = ($id === null) ? new $this->modelClass : $this->modelClass::find($id);
         $redirectRoute = 'create';
         $redirectParams = [];
+        $message = [
+            'title' => __('lcore::messages.commons.createalerttitle'),
+            'content' => __('lcore::messages.commons.createalertcontent')
+        ];
+        $typeMessage = 'success';
         $isNewResource = strlen($modelObject->{$modelObject->getKeyName()}) == 0;
         // Determinamos si no es un nuevo registro
         if (!$isNewResource) {
             $redirectRoute = 'edit';
             $redirectParams = [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}];
+            $message = [
+                'title' => __('lcore::messages.commons.updatealerttitle'),
+                'content' => __('lcore::messages.commons.updatealertcontent')
+            ];
         }
         // Realizando la validación
         $validator = $this->modelClass::makeValidator($request);
@@ -260,6 +276,11 @@ class ResourceController extends Controller
             if ($this->isApi) {
                 $response = response()->json($validator->errors(), 400);
             } else {
+                $message = [
+                    'title' => __('lcore::messages.commons.errorstoretitle'),
+                    'content' => __('lcore::messages.commons.errorstorecontent')
+                ];
+                $typeMessage = 'danger';
                 $response = $this->redirect(
                     redirect()
                         ->route($this->getRoute($redirectRoute), $redirectParams)
@@ -279,6 +300,7 @@ class ResourceController extends Controller
                 );
             }
         }
+        $this->setFlashAlert($message, $typeMessage);
         return $response;
     }
 
@@ -306,6 +328,19 @@ class ResourceController extends Controller
     }
 
     /**
+     * Añade a la solicitud en mensaje de alerta a la sesión
+     * 
+     * @param string $type Tipo de alerta
+     * @param array $message Arreglo con los datos del mensaje
+     */
+    protected function setFlashAlert($message, $type = 'success') {
+        request()->session()->flash($this->keySessionMessage, [
+            'type' => $type,
+            'payload' => $message
+        ]);
+    }
+
+    /**
      * Cambia el estado del recurso de activo a borrado y biseversa
      * 
      * @param integer $id
@@ -317,8 +352,16 @@ class ResourceController extends Controller
         $modelObject = $this->modelClass::withTrashed()->find($id);
         if ($modelObject->trashed()) {
             $modelObject->restore();
+            $message = [
+                'title' => __('lcore::messages.commons.restorealerttitle'),
+                'content' => __('lcore::messages.commons.restorealertcontent')
+            ];
         } else {
             $modelObject->delete();
+            $message = [
+                'title' => __('lcore::messages.commons.deletealerttitle'),
+                'content' => __('lcore::messages.commons.deletealertcontent')
+            ];
         }
         $response = $this->redirect(
             redirect()->route($this->getRoute('index'))
@@ -326,6 +369,7 @@ class ResourceController extends Controller
         if ($this->isApi) {
             $response = response()->json(null, 204);
         }
+        $this->setFlashAlert($message);
         return $response;
     }
 
