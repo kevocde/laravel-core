@@ -128,7 +128,7 @@ class ResourceController extends Controller
      * Retorna la ruta para las vistas añadiendo el directorio base del controlador
      *
      * @param string $view Uri de la vista
-     * @param boolean $withRoute determina cuando la ruta será generada no para vistas si no para enrutador
+     * @param boolean $withCommonCore determina si se aplicará las vistas comunes o serán directamente aplicadas de la misma carpeta contenedora
      *
      * @return string
      */
@@ -150,7 +150,9 @@ class ResourceController extends Controller
 
     /**
      * Retorna las rutas según con el nombre del recurso
-     *
+     * 
+     * @param string $action Nombre de la acción que se está solicitando
+     * 
      * @return string
      */
     protected function getRoute($action)
@@ -165,6 +167,7 @@ class ResourceController extends Controller
      * @param string $view Nombre de la vista requerida
      * @param array $data Datos que serán enviados a la vista
      * @param array $mergeData Datos que serán enviados a la vista sobreescribiendo los globales
+     *
      * @return string
      */
     protected function view($view, $data = [], $mergeData = [])
@@ -183,6 +186,7 @@ class ResourceController extends Controller
      * Mostrando un listado de los registros de la tabla
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
@@ -202,42 +206,6 @@ class ResourceController extends Controller
         return $this->view('create', [
             'model' => $modelObject
         ]);
-    }
-
-    /**
-     * Almacena un nuevo registro.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $return = null;
-        $validator = $this->modelClass::makeValidator($request);
-        if ($validator->fails()) {
-            if ($this->isApi) {
-                $return = response()->json($validator->errors(), 400);
-            } else {
-                $return = $this->redirect(
-                    redirect()
-                        ->route($this->getRoute('create'))
-                        ->withErrors($validator)
-                        ->withInput()
-                );
-            }
-        } else {
-            $modelObject = new $this->modelClass;
-            $modelObject->fill($request->post());
-            $modelObject->save();
-            if ($this->isApi) {
-                $return = response()->json($this->getFormattedResponse($modelObject), 201);
-            } else {
-                $return = $this->redirect(
-                    redirect()->route($this->getRoute('index'))
-                );
-            }
-        }
-        return $return;
     }
 
     /**
@@ -267,6 +235,65 @@ class ResourceController extends Controller
     }
 
     /**
+     * Realiza el almacenamiento del recurso tanto para edición como para creación de un recurso
+     * 
+     * @param \Illuminate\Http\Request $request Solicitud
+     * @param integer $id Entero con el identificador del recurso (si es edición)
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    protected function saveResource(Request $request, int $id = null)
+    {
+        $response = null;
+        $modelObject = ($id === null) ? new $this->modelClass : $this->modelClass::find($id);
+        $redirectRoute = 'create';
+        $redirectParams = [];
+        $isNewResource = strlen($modelObject->{$modelObject->getKeyName()}) == 0;
+        // Determinamos si no es un nuevo registro
+        if (!$isNewResource) {
+            $redirectRoute = 'edit';
+            $redirectParams = [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}];
+        }
+        // Realizando la validación
+        $validator = $this->modelClass::makeValidator($request);
+        if ($validator->fails()) {
+            if ($this->isApi) {
+                $response = response()->json($validator->errors(), 400);
+            } else {
+                $response = $this->redirect(
+                    redirect()
+                        ->route($this->getRoute($redirectRoute), $redirectParams)
+                        ->withErrors($validator)
+                        ->withInput()
+                );
+            }
+        } else {
+            $paramsToFill = $isNewResource ? $request->post() : $request->all();
+            $modelObject->fill($paramsToFill);
+            $modelObject->save();
+            if ($this->isApi) {
+                $response = response()->json($this->getFormattedResponse($modelObject), 201);
+            } else {
+                $response = $this->redirect(
+                    redirect()->route($this->getRoute('index'))
+                );
+            }
+        }
+        return $response;
+    }
+
+    /**
+     * Almacena un nuevo registro.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        return $this->saveResource($request);
+    }
+
+    /**
      * Actualiza un recurso específico
      *
      * @param \Illuminate\Http\Request $request
@@ -275,32 +302,31 @@ class ResourceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $modelObject = $this->modelClass::find($id);
-        $return = null;
-        $validator = $this->modelClass::makeValidator($request);
-        if ($validator->fails()) {
-            if ($this->isApi) {
-                $return = response()->json($validator->errors(), 400);
-            } else {
-                $return = $this->redirect(
-                    redirect()
-                        ->route($this->getRoute('edit'), [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}])
-                        ->withErrors($validator)
-                        ->withInput()
-                );
-            }
+        return $this->saveResource($request, $id);
+    }
+
+    /**
+     * Cambia el estado del recurso de activo a borrado y biseversa
+     * 
+     * @param integer $id
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    protected function changeStatus($id)
+    {
+        $modelObject = $this->modelClass::withTrashed()->find($id);
+        if ($modelObject->trashed()) {
+            $modelObject->restore();
         } else {
-            $modelObject->fill($request->all());
-            $modelObject->save();
-            if ($this->isApi) {
-                $return = response()->json($this->getFormattedResponse($modelObject), 200);
-            } else {
-                $return = $this->redirect(
-                    redirect()->route($this->getRoute('index'))
-                );
-            }
+            $modelObject->delete();
         }
-        return $return;
+        $response = $this->redirect(
+            redirect()->route($this->getRoute('index'))
+        );
+        if ($this->isApi) {
+            $response = response()->json(null, 204);
+        }
+        return $response;
     }
 
     /**
@@ -311,14 +337,7 @@ class ResourceController extends Controller
      */
     public function destroy($id)
     {
-        $this->modelClass::destroy($id);
-        $return = response()->json(null, 204);
-        if (!$this->isApi) {
-            $return = $this->redirect(
-                redirect()->route($this->getRoute('index'))
-            );
-        }
-        return $return;
+        return $this->changeStatus($id);
     }
 
     /**
@@ -329,15 +348,7 @@ class ResourceController extends Controller
      */
     public function restore($id)
     {
-        $modelObject = $this->modelClass::withTrashed()->find($id);
-        $modelObject->restore();
-        $return = response()->json(null, 204);
-        if (!$this->isApi) {
-            $return = $this->redirect(
-                redirect()->route($this->getRoute('index'))
-            );
-        }
-        return $return;
+        return $this->changeStatus($id);
     }
 
     /**
@@ -358,7 +369,7 @@ class ResourceController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    public function redirect($response)
+    protected function redirect($response)
     {
         $redirectResponse = $response;
         $backUrl = request('back-url', null);
@@ -375,7 +386,7 @@ class ResourceController extends Controller
      * @param \Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model|\Illuminate\Pagination\LengthAwarePaginator $data
      * @return \Illuminate\Support\Collection|\Illuminate\Pagination\Paginator
      */
-    public function getFormattedResponse($data)
+    protected function getFormattedResponse($data)
     {
         $isCollectionOrPaginator = (is_a($data, \Illuminate\Support\Collection::class)
             || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class));
