@@ -33,9 +33,9 @@ trait SearchTrait
     {
         $instance = new static;
         // Carga de valores para los atributos
-        $instance->load($request->query(null, []));
+        $instance->loadParams($request->query(null, []));
         // Carga de atributos adicionales
-        $instance->loadAditional($request->query(null, []));
+        $instance->loadParamsAditional($request->query(null, []));
         // Creación de query
         $query = $instance->getSearchQuery();
         // Aplicación de filtros
@@ -51,7 +51,7 @@ trait SearchTrait
      * @param array $params Parámetros de la solicitud
      * @param string $formName Nombre del formulario de donde se sacarán los parámetros
      */
-    public function load($params, $formName = '')
+    public function loadParams($params, $formName = '')
     {
         $formName = ($formName == '') ? static::getModelName() : $formName;
         $params = !empty($params) ? $params : [];
@@ -68,7 +68,7 @@ trait SearchTrait
      * 
      * @param array $params Parámetros de la solicitud
      */
-    public function loadAditional($params)
+    public function loadParamsAditional($params)
     {
         if (isset($params['per-page']) && !empty($params['per-page'])) {
             $value = ($params['per-page'] == 'all') ? $this->count() : $params['per-page'];
