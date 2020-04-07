@@ -264,7 +264,8 @@ class ResourceController extends Controller
         // Determinamos si no es un nuevo registro
         if (!$isNewResource) {
             $redirectRoute = 'edit';
-            $redirectParams = [Inflector::singularize(static::getBaseRouteName()) => $modelObject->{$modelObject->getKeyName()}];
+            $keyParam = Inflector::singularize(static::getBaseRouteName());
+            $redirectParams = [(is_array($keyParam) ? end($keyParam) : $keyParam) => $modelObject->{$modelObject->getKeyName()}];
             $message = [
                 'title' => __('lcore::messages.commons.updatealerttitle'),
                 'content' => __('lcore::messages.commons.updatealertcontent')
