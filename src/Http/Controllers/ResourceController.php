@@ -335,10 +335,12 @@ class ResourceController extends Controller
      * @param array $message Arreglo con los datos del mensaje
      */
     protected function setFlashAlert($message, $type = 'success') {
-        request()->session()->flash($this->keySessionMessage, [
-            'type' => $type,
-            'payload' => $message
-        ]);
+        if (!$this->isApi) {
+            request()->session()->flash($this->keySessionMessage, [
+                'type' => $type,
+                'payload' => $message
+            ]);
+        }
     }
 
     /**
