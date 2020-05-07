@@ -149,18 +149,22 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $name = $this->getName();
 
-        // Cargando la configuración
+        // Registro de proveedores de las dependencias
+        if (!empty($this->additionalProviders)) {
+            foreach ($this->additionalProviders as $providerClass) {
+                $this->app->register($providerClass);
+            }
+        }
+
+        // Mezcla de la configuración
         $this->mergeConfigFrom($this->baseDir . '/config/app.php', $name);
-        // Opciones específicas para las vistas
+
+        // Registro de opciones específicas para las vistas generales
         if ($this->withViews) {
             static::defineViewVariables([
                 'breadcrumbs' => ['label' => 'Inicio', 'link' => 'home'],
                 'title' => config($name . '.name', $name)
             ]);
-        }
-
-        foreach ($this->additionalProviders as $providerClass) {
-            $this->app->register($providerClass);
         }
     }
 
@@ -169,7 +173,7 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
      *
      * @param array $listVariables Listado de variables en formato llave valor
      */
-    public static function defineViewVariables($listVariables)
+    public static function defineViewVariables($listVariables = [])
     {
         foreach ($listVariables as $key => $value) {
             view()->share($key, $value);
