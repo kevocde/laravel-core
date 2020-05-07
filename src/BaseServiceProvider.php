@@ -55,21 +55,21 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
 
     /**
      * Utilizará recursos públicos
-     * 
+     *
      * @var boolean
      */
     protected $withPublicAssets = true;
 
     /**
      * Ruta base donde se hereda el ServiceProvider base
-     * 
+     *
      * @var string
      */
     protected $baseDir = __DIR__;
 
     /**
      * Listado de proveedores adicionales a registrar
-     * 
+     *
      * @var array
      */
     protected $additionalProviders = [];
@@ -96,25 +96,48 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $name = $this->getName();
 
-        // Plublicando configuraciones y recursos
-        $publishes = [
+        // Configuraciones
+        $this->publishes([
             $this->baseDir . '/config/app.php' => config_path($name . '.php')
-        ];
-        if ($this->withTranslations) $publishes[$this->baseDir . '/resources/lang'] = resource_path('views/vendor/' . $name);
-        if ($this->withViews) $publishes[$this->baseDir . '/resources/views'] = resource_path('lang/' . $name);
-        if ($this->withPublicAssets) $publishes[$this->baseDir . '/public'] = public_path('vendor/' . $name);
-        $this->publishes($publishes, $name);
+        ], 'config');
 
-        // Cargando rutas
-        if ($this->withRoutes) $this->loadRoutesFrom($this->baseDir . '/routes/web.php');
-        // Cargando migraciones
-        if ($this->withMigrations) $this->loadMigrationsFrom($this->baseDir . '/database/migrations');
-        // Cargando sembradores de la base de datos
-        if ($this->withFactories) $this->loadFactoriesFrom($this->baseDir.'/database/factories');
-        // Cargando lenguaje
-        if ($this->withTranslations) $this->loadTranslationsFrom($this->baseDir . '/resources/lang', $name);
-        // Cargando vistas
-        if ($this->withViews) $this->loadViewsFrom($this->baseDir . '/resources/views', $name);
+        // Rutas
+        if ($this->withRoutes) {
+            $this->loadRoutesFrom($this->baseDir . '/routes/web.php');
+        }
+
+        // Migraciones
+        if ($this->withMigrations) {
+            $this->loadMigrationsFrom($this->baseDir . '/database/migrations');
+        }
+
+        // Fabricas
+        if ($this->withFactories) {
+            $this->loadFactoriesFrom($this->baseDir.'/database/factories');
+        }
+
+        // Traducciones
+        if ($this->withTranslations) {
+            $this->loadTranslationsFrom($this->baseDir . '/resources/lang', $name);
+            $this->publishes([
+                $this->baseDir . '/resources/lang' => resource_path('lang/vendor/' . $name)
+            ], 'translations');
+        }
+
+        // Vistas
+        if ($this->withViews) {
+            $this->loadViewsFrom($this->baseDir . '/resources/views', $name);
+            $this->publishes([
+                $this->baseDir . '/resources/views' => resource_path('views/vendor/' . $name)
+            ], 'views');
+        }
+
+        // Assets públicos
+        if ($this->withPublicAssets) {
+            $this->publishes([
+                $this->baseDir . '/public' => public_path('vendor/' . $name)
+            ], 'public');
+        }
     }
 
     /**
