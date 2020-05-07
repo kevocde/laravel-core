@@ -2,7 +2,6 @@
 
 namespace Kevocode\LaravelCore\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
