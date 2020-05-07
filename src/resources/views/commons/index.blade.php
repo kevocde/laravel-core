@@ -92,21 +92,18 @@ $breadcrumbs = array_merge($breadcrumbs, [
                                             @endforeach
                                             <td class="text-center">
                                                 <a href="{{ route($routeName . '.edit', [$nameParam => $item->{$item->getKeyName()}]) }}" class="btn btn-primary btn-sm d-inline-block mb-1" title="{{ __('lcore::messages.commons.edit') }}"><i class="mdi mdi-lead-pencil"></i> {{ __('lcore::messages.commons.edit') }}</a>
-                                                @php
-                                                    $randomKey = rand(0, 9) . time();
-                                                @endphp
                                                 @if(!$item->trashed())
-                                                    <form id="{{ $routeName }}-delete-form-{{ $randomKey }}" class="d-none" action="{{ route($routeName . '.destroy', [$nameParam => $item->{$item->getKeyName()}]) }}" method="POST">
+                                                    <form id="{{ $routeName }}-delete-form-{{ $loop->index }}" class="d-none" action="{{ route($routeName . '.destroy', [$nameParam => $item->{$item->getKeyName()}]) }}" method="POST">
                                                         @method('DELETE')
                                                         @csrf
                                                     </form>
-                                                    <button class="btn btn-danger btn-sm mb-1" form="{{ $routeName }}-delete-form-{{ $randomKey }}" title="{{ __('lcore::messages.commons.remove') }}"><i class="mdi mdi-delete"></i> {{ __('lcore::messages.commons.remove') }}</button>
+                                                    <button class="btn btn-danger btn-sm mb-1" form="{{ $routeName }}-delete-form-{{ $loop->index }}" title="{{ __('lcore::messages.commons.remove') }}"><i class="mdi mdi-delete"></i> {{ __('lcore::messages.commons.remove') }}</button>
                                                 @else
-                                                    <form id="{{ $routeName }}-restore-form-{{ $randomKey }}" class="d-none" action="{{ route($routeName . '.restore', [$nameParam => $item->{$item->getKeyName()}]) }}" method="POST">
+                                                    <form id="{{ $routeName }}-restore-form-{{ $loop->index }}" class="d-none" action="{{ route($routeName . '.restore', [$nameParam => $item->{$item->getKeyName()}]) }}" method="POST">
                                                         @method('PUT')
                                                         @csrf
                                                     </form>
-                                                    <button class="btn btn-secondary btn-sm mb-1" form="{{ $routeName }}-restore-form-{{ $randomKey }}" title="{{ __('lcore::messages.commons.restore') }}"><i class="mdi mdi-reload"></i> {{ __('lcore::messages.commons.restore') }}</button>
+                                                    <button class="btn btn-secondary btn-sm mb-1" form="{{ $routeName }}-restore-form-{{ $loop->index }}" title="{{ __('lcore::messages.commons.restore') }}"><i class="mdi mdi-reload"></i> {{ __('lcore::messages.commons.restore') }}</button>
                                                 @endif
                                             </td>
                                         </tr>

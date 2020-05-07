@@ -135,4 +135,14 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
         }
         return $withCollection ? $instance->get()->pluck($descriptiveColumn, (new static)->getKeyName()) : $instance->get();
     }
+
+    /**
+     * Identifica si un recurso es nuevo o esta siendo editado
+     * 
+     * @return boolean
+     */
+    public function isNewResource()
+    {
+        return strlen($this->{$this->getKeyName()}) == 0;
+    }
 }

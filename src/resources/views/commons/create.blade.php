@@ -19,7 +19,7 @@ if (!isset($formParams)) {
         <div class="card-body">
             <div class="row">
                 <div class="col-12">
-                    @include($viewsDir . '_form', array_merge($formParams, ['routeName' => $routeName, 'model' => $model]))
+                    @include($viewsDirectory . '_form', array_merge($formParams, ['routeName' => $routeName, 'model' => $model]))
                 </div>
             </div>
         </div>

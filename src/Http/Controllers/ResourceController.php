@@ -16,7 +16,7 @@ use Symfony\Component\Inflector\Inflector;
  * @version 1.0.0
  * @since 0.0.1
  */
-class ResourceController extends Controller
+class ResourceController extends BaseController
 {
     /**
      * Modelo al cual hará referencia el controlador tipo recurso
