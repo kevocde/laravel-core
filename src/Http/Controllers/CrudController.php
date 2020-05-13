@@ -10,7 +10,7 @@ use Symfony\Component\Inflector\Inflector;
 /**
  * Controlador base para los CRUDs
  *
- * @package App\Http\Controllers
+ * @package Kevocode\LaravelCore\Http\Controllers
  *
  * @author Kevin Daniel Guzmán Delgadillo <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
@@ -59,17 +59,6 @@ class CrudController extends BaseController
         $this->defineViewsDirectory();
         // Definición de variables para las vistas o variables que irán a las vistas
         $this->defineVariablesViews();
-    }
-
-    /**
-     * Define las configuraciones para el controlador según la configuración de la aplicación o paquete
-     */
-    protected function defineCommonSettings()
-    {
-        // Definición de lenguaje
-        $configKey = empty($this->packageName) ? 'app' : $this->packageName;
-        $defaultLocale = env(strtoupper($configKey) . '_LOCALE', config($configKey . '.locale'));
-        App::setLocale($defaultLocale);
     }
 
     /**
@@ -383,27 +372,5 @@ class CrudController extends BaseController
             $redirectResponse = redirect($backUrl);
         }
         return $redirectResponse;
-    }
-
-    /**
-     * Retorna la respuesta aplicando (o no) las clases formateadoras definidas en las propiedades
-     * $collectClass y $resourceCollectionClass
-     * 
-     * @param \Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model|\Illuminate\Pagination\LengthAwarePaginator $data
-     * @return \Illuminate\Support\Collection|\Illuminate\Pagination\Paginator
-     */
-    protected function getFormattedResponse($data)
-    {
-        $isCollectionOrPaginator = (is_a($data, \Illuminate\Support\Collection::class)
-            || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class));
-        if (!is_null($this->resourceCollectionClass) && $isCollectionOrPaginator) {
-            $data = new $this->resourceCollectionClass($data);
-        } elseif (!$isCollectionOrPaginator && !is_null($this->collectClass)) {
-            $data = new $this->collectClass($data);
-        } elseif (!$isCollectionOrPaginator) {
-            // Esto se hace con el fín de que la estructura de la respuesta siempre sea compatible se utilice o no
-            $data = ['data' => $data];
-        }
-        return $data;
     }
 }

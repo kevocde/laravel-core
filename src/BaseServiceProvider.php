@@ -2,6 +2,8 @@
 
 namespace Kevocode\LaravelCore;
 
+use Illuminate\Support\Facades\Route;
+
 /**
  * ServiceProvider base para los paquetes que hereden de este
  *
