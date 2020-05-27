@@ -164,7 +164,7 @@ class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
         // Registro de opciones específicas para las vistas generales
         if ($this->withViews) {
             static::defineViewVariables([
-                'breadcrumbs' => ['label' => 'Inicio', 'link' => 'home'],
+                'breadcrumbs' => [['label' => 'Inicio', 'link' => 'home']],
                 'title' => config($name . '.name', $name)
             ]);
         }
