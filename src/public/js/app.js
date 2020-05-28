@@ -86,85 +86,6 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/resources/js/app.js":
-/*!*********************************!*\
-  !*** ./src/resources/js/app.js ***!
-  \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(/*! ./basic-function */ "./src/resources/js/basic-function.js");
-
-/***/ }),
-
-/***/ "./src/resources/js/basic-function.js":
-/*!********************************************!*\
-  !*** ./src/resources/js/basic-function.js ***!
-  \********************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/**
- * Inicializa los select2 del formulario de búsqueda rápido
- */
-function loadSelect2SelectsOfForm(formFash) {
-  $("select[form=\"".concat(formFash, "\"]")).each(function (idx, element) {
-    $(element).select2();
-  });
-}
-/**
- * Añade los respectivos eventos a los elementos asociados al formulario de búsqueda rápida
- */
-
-
-function addEventsToFashForm(gridId, formFash) {
-  $("#".concat(gridId, " table thead")).find("[form=\"".concat(formFash, "\"]")).on('change focusout keyup', function (evt) {
-    var submit = true;
-
-    if (evt.type == 'keyup') {
-      var keycode = event.keyCode ? event.keyCode : event.which;
-      submit = keycode == '13';
-    }
-
-    if (submit) $("#".concat(formFash)).submit();
-  });
-}
-/**
- * Carga en los form-group la clase required
- */
-
-
-function loadRequiredSenialOfInputs() {
-  $('select.form-control, input.form-control, checkbox.form-control, radio.form-control').each(function (idx, element) {
-    var parent = $(element).parent();
-
-    if ($(element).prop('required') && parent.hasClass('form-group')) {
-      parent.addClass('required');
-    }
-  });
-}
-/**
- * Función incializadora, esta carga configuraciones específicas
- */
-
-
-function initSigaWeb() {
-  try {
-    // Configuración de select2
-    $.fn.select2.defaults.set('theme', 'bootstrap4'); // Carga de los labels de los inputs cuando son requeridos
-
-    loadRequiredSenialOfInputs();
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-window.addEventListener('DOMContentLoaded', function () {
-  initSigaWeb();
-});
-
-/***/ }),
-
 /***/ "./src/resources/sass/app.scss":
 /*!*************************************!*\
   !*** ./src/resources/sass/app.scss ***!
@@ -183,8 +104,8 @@ window.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/vagrant/code/admin-sw/vendor/kevocode/laravel-core/src/resources/js/app.js */"./src/resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/vagrant/code/admin-sw/vendor/kevocode/laravel-core/src/resources/sass/app.scss */"./src/resources/sass/app.scss");
+!(function webpackMissingModule() { var e = new Error("Cannot find module '/home/vagrant/code/sigaweb-v2/vendor/kevocode/laravel-core/src/resources/js/app.js'"); e.code = 'MODULE_NOT_FOUND'; throw e; }());
+module.exports = __webpack_require__(/*! /home/vagrant/code/sigaweb-v2/vendor/kevocode/laravel-core/src/resources/sass/app.scss */"./src/resources/sass/app.scss");
 
 
 /***/ })
