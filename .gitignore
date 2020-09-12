@@ -1,6 +1,6 @@
-/vendor/
-composer.lock
-
+.idea/
+vendor/
 node_modules/
-
+composer.lock
 yarn.lock
+
