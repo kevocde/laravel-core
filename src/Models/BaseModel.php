@@ -1,12 +1,15 @@
 <?php
 
-namespace Kevocode\LaravelCore\Models;
+namespace Kevocde\LaravelCore\Models;
 
-use Illuminate\Http\Request;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Kevocode\LaravelCore\Traits\SearchTrait;
-use Symfony\Component\Inflector\Inflector;
+use Illuminate\Support\Str;
+use Kevocde\LaravelCore\Traits\SearchTrait;
 
 /**
  * Modelo base de la aplicación
@@ -16,8 +19,11 @@ use Symfony\Component\Inflector\Inflector;
  * @author Kevin Daniel Guzmán Delgadillo <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
  * @since 0.0.1
+ *
+ * @method static BaseModel find(int $id)
+ * @method static Builder orderBy(string $columnName, string $orderType)
  */
-class BaseModel extends \Illuminate\Database\Eloquent\Model
+class BaseModel extends Model
 {
     use SoftDeletes, SearchTrait;
 
@@ -29,15 +35,14 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
     public static function getModelName()
     {
         $className = explode('\\', static::class);
-        return Inflector::pluralize(end($className));
+        return Str::plural(end($className));
     }
 
     /**
      * Retorna el validador correspondiente al modelo
      *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Support\Facades\Validator
+     * @param Request $request
+     * @return \Illuminate\Contracts\Validation\Validator
      */
     public static function makeValidator(Request $request)
     {
@@ -87,7 +92,7 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
 
     /**
      * Retorna un listado con todos los registros de la base de datos en formato llave => valor
-     * 
+     *
      * @param boolean $withCollection Determina si se devolverá el valor como una colección llave valor
      * o como una colección con cada una de las intancias de la consulta
      * @param array $whereFilters Arreglo con las sentencias para cada consulta de dos formas diferentes:
@@ -104,13 +109,11 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
      *     'nombre_metodo' => [...parámetros de función]
      * ]
      * ```
-     * 
-     * @return array
+     * @param array $listOrders
+     * @return Collection
      */
     public static function getData($withCollection = true, $whereFilters = [], $listOrders = [])
     {
-        $instance = new static;
-        $listItems = [];
         $instance = null;
         $descriptiveColumn = static::getDescriptiveColumn();
         $listOrders = empty($listOrders) ? [[$descriptiveColumn, 'asc']] : $listOrders;
@@ -128,7 +131,6 @@ class BaseModel extends \Illuminate\Database\Eloquent\Model
             if (empty($instance)) $instance = forward_static_call_array([static::class, $key], $filter);
             else call_user_func([$instance, $key], $filter);
         }
-        // dd($instance, $whereFilters);
         foreach ($listOrders as $order) {
             if (empty($instance)) $instance = static::orderBy($order[0], $order[1]);
             else $instance->orderBy($order[0], $order[1]);

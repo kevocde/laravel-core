@@ -1,11 +1,15 @@
 <?php
 
-namespace Kevocode\LaravelCore\Http\Controllers;
+namespace Kevocde\LaravelCore\Http\Controllers;
 
+use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\Inflector\Inflector;
 
 /**
  * Controlador base para los CRUDs
@@ -47,9 +51,8 @@ class ResourceController extends BaseController
     /**
      * Mostrando un listado de los registros de la tabla
      *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Model|Model[]|LengthAwarePaginator|LengthAwarePaginator[]|Paginator|Collection|Collection[]
      */
     public function index(Request $request)
     {
@@ -60,10 +63,10 @@ class ResourceController extends BaseController
     /**
      * Muestra los detalles de un determinado recurso
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return Model|Model[]|LengthAwarePaginator|LengthAwarePaginator[]|Paginator|Collection|Collection[]
      */
-    public function show($id)
+    public function show(int $id)
     {
         $modelObject = $this->modelClass::find($id);
         return $this->getFormattedResponse($modelObject);
@@ -71,11 +74,10 @@ class ResourceController extends BaseController
 
     /**
      * Realiza el almacenamiento del recurso tanto para edición como para creación de un recurso
-     * 
-     * @param \Illuminate\Http\Request $request Solicitud
-     * @param integer $id Entero con el identificador del recurso (si es edición)
-     * 
-     * @return \Illuminate\Http\Response
+     *
+     * @param Request $request Solicitud
+     * @param int|null $id Entero con el identificador del recurso (si es edición)
+     * @return JsonResponse
      */
     protected function saveResource(Request $request, int $id = null)
     {
@@ -98,8 +100,8 @@ class ResourceController extends BaseController
     /**
      * Almacena un nuevo registro.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return JsonResponse
      */
     public function store(Request $request)
     {
@@ -109,23 +111,23 @@ class ResourceController extends BaseController
     /**
      * Actualiza un recurso específico
      *
-     * @param \Illuminate\Http\Request $request
-     * @param  integer $id
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         return $this->saveResource($request, $id);
     }
 
     /**
      * Cambia el estado del recurso de activo a borrado y biseversa
-     * 
-     * @param integer $id
-     * 
-     * @return \Illuminate\Http\Response
+     *
+     * @param int $id
+     * @return JsonResponse
+     * @throws Exception
      */
-    protected function changeStatus($id)
+    protected function changeStatus(int $id)
     {
         $modelObject = $this->modelClass::withTrashed()->find($id);
         if ($modelObject->trashed()) {
@@ -139,10 +141,11 @@ class ResourceController extends BaseController
     /**
      * Remueve un recurso específico
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return JsonResponse
+     * @throws Exception
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         return $this->changeStatus($id);
     }
@@ -150,10 +153,11 @@ class ResourceController extends BaseController
     /**
      * Restaura un recurso en específico
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return JsonResponse
+     * @throws Exception
      */
-    public function restore($id)
+    public function restore(int $id)
     {
         return $this->changeStatus($id);
     }
@@ -173,13 +177,13 @@ class ResourceController extends BaseController
      * Retorna la respuesta aplicando (o no) las clases formateadoras definidas en las propiedades
      * $collectClass y $resourceCollectionClass
      * 
-     * @param \Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model|\Illuminate\Pagination\LengthAwarePaginator $data
-     * @return \Illuminate\Support\Collection|\Illuminate\Pagination\Paginator
+     * @param Collection|Model|LengthAwarePaginator $data
+     * @return Collection|Paginator
      */
     protected function getFormattedResponse($data)
     {
-        $isCollectionOrPaginator = (is_a($data, \Illuminate\Support\Collection::class)
-            || is_a($data, \Illuminate\Pagination\LengthAwarePaginator::class));
+        $isCollectionOrPaginator = (is_a($data, Collection::class)
+            || is_a($data, LengthAwarePaginator::class));
         if (!is_null($this->resourceCollectionClass) && $isCollectionOrPaginator) {
             $data = new $this->resourceCollectionClass($data);
         } elseif (!$isCollectionOrPaginator && !is_null($this->collectClass)) {

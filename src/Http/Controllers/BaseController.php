@@ -1,20 +1,22 @@
 <?php
 
-namespace Kevocode\LaravelCore\Http\Controllers;
+namespace Kevocde\LaravelCore\Http\Controllers;
 
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Kevocde\LaravelCore\Models\BaseModel;
 
-class BaseController extends \Illuminate\Routing\Controller
+class BaseController extends Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
      * Modelo al cual hará referencia el controlador tipo recurso
      *
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var BaseModel
      */
     protected $modelClass = null;
 

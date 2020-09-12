@@ -1,31 +1,33 @@
 {
-    "name": "kevocode/laravel-core",
+    "name": "kevocde/laravel-core",
     "description": "Paquete con herramientas para la simplificacion de CRUDs y otras",
     "type": "library",
     "license": "GPL-3.0-only",
     "authors": [
         {
-            "name": "kevocode",
-            "email": "kevindanielguzmen98@gmail.com"
+            "name": "kevocde",
+            "email": "kevocde@gmail.com"
         }
     ],
     "minimum-stability": "dev",
     "require": {
         "php": "^7.2",
         "symfony/inflector": "^5.0",
+        "illuminate/support": "^6.0|^7.0|^8.0",
         "marvinlabs/laravel-html-bootstrap-4": "^1.7"
+
     },
     "require-dev": {
         "symfony/var-dumper": "^5.1@dev"
     },
     "autoload": {
         "psr-4": {
-            "Kevocode\\LaravelCore\\": "src"
+            "Kevocde\\LaravelCore\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Kevocode\\LaravelCore\\Test\\": "test"
+            "Kevocde\\LaravelCore\\Test\\": "test"
         }
     }
 }

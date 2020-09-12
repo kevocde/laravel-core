@@ -1,7 +1,8 @@
 <?php
 
-namespace Kevocode\LaravelCore\Traits;
+namespace Kevocde\LaravelCore\Traits;
 
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -9,10 +10,12 @@ use Illuminate\Http\Request;
  * Trait para los modelos de la aplicación, este trait proporciona las funciones de búsqueda
  * rápida
  * 
- * @package App\Traits
+ * @package Kevocde\Traits
  * @author Kevin Daniel Guzmán Delgadillo <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
  * @since 1.0.0
+ *
+ * @method int count
  */
 trait SearchTrait
 {
@@ -26,7 +29,7 @@ trait SearchTrait
     /**
      * Realiza una búsqueda según los parámetros pasados por la URL
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return array
      */
     public static function search(Request $request)
@@ -51,7 +54,7 @@ trait SearchTrait
      * @param array $params Parámetros de la solicitud
      * @param string $formName Nombre del formulario de donde se sacarán los parámetros
      */
-    public function loadParams($params, $formName = '')
+    public function loadParams(array $params, $formName = '')
     {
         $formName = ($formName == '') ? static::getModelName() : $formName;
         $params = !empty($params) ? $params : [];
@@ -68,7 +71,7 @@ trait SearchTrait
      * 
      * @param array $params Parámetros de la solicitud
      */
-    public function loadParamsAditional($params)
+    public function loadParamsAditional(array $params)
     {
         if (isset($params['per-page']) && !empty($params['per-page'])) {
             $value = ($params['per-page'] == 'all') ? $this->count() : $params['per-page'];
@@ -79,11 +82,10 @@ trait SearchTrait
     /**
      * Retorna la consulta tipo Builder para la búsqueda
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function getSearchQuery()
     {
-
         return $this->showDeleted ? $this::onlyTrashed() : $this::query();
     }
 
@@ -108,10 +110,11 @@ trait SearchTrait
      *
      * @param $query
      * @param array $listConditions
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
-    public static function applyFilterWhere(Builder &$query, $listConditions)
+    public static function applyFilterWhere(Builder $query, array $listConditions)
     {
+
         foreach ($listConditions as $key => $value) {
             $operation = '=';
             $valueSearch = $value;
@@ -121,9 +124,6 @@ trait SearchTrait
                 $valueSearch = $value[2];
             }
             if ((!is_array($value) && !empty($value)) || (is_array($value) && !empty($valueSearch))) {
-                if (is_array($value)) {
-                    $valueSearch = $valueSearch;
-                }
                 $query->where($key, $operation, $valueSearch);
             }
         }
@@ -133,11 +133,11 @@ trait SearchTrait
     /**
      * Permite añadir un orden según la interpretación de los parámetros de la URL
      *
-     * @param $query
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param Builder $query
+     * @param Request $request
+     * @return void
      */
-    public static function applyOrder(Builder &$query, Request $request)
+    public static function applyOrder(Builder $query, Request $request)
     {
         $listOrdersQuery = $request->query('sort', []);
         $listOrdersQuery = (!empty($listOrdersQuery)) ? explode(',', $listOrdersQuery) : [];
@@ -149,13 +149,13 @@ trait SearchTrait
 
     /**
      * Añade al paginador los links necesarios según los parámetros de la petición
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @param \Illuminate\Pagination\LengthAwarePaginator $paginator
-     * 
+     *
+     * @param Request $request
+     * @param Paginator $paginator
+     *
      * @return string
      */
-    public static function getPaginator(Request $request, $paginator)
+    public static function getPaginator(Request $request, Paginator $paginator)
     {
         $params = $request->query(null, []);
         unset($params['page']);

@@ -1,16 +1,18 @@
 <?php
 
-namespace Kevocode\LaravelCore\Http\Controllers;
+namespace Kevocde\LaravelCore\Http\Controllers;
 
+use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\Inflector\Inflector;
+use Illuminate\Support\Str;
 
 /**
  * Controlador base para los CRUDs
  *
- * @package Kevocode\LaravelCore\Http\Controllers
+ * @package Kevocde\LaravelCore\Http\Controllers
  *
  * @author Kevin Daniel Guzmán Delgadillo <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
@@ -100,7 +102,7 @@ class CrudController extends BaseController
      *
      * @return string
      */
-    protected function getViewUri($view, $withCommonCore = true)
+    protected function getViewUri(string $view, $withCommonCore = true)
     {
         $viewUri = '';
         $parts = [$this->viewsDirectory, $view];
@@ -118,12 +120,12 @@ class CrudController extends BaseController
 
     /**
      * Retorna las rutas según con el nombre del recurso
-     * 
+     *
      * @param string $action Nombre de la acción que se está solicitando
-     * 
+     *
      * @return string
      */
-    protected function getRoute($action)
+    protected function getRoute(string $action)
     {
         $parts = [$this->viewsDirectory, $action];
         return implode('.', $parts);
@@ -138,7 +140,7 @@ class CrudController extends BaseController
      *
      * @return string
      */
-    protected function view($view, $data = [], $mergeData = [])
+    protected function view(string $view, $data = [], $mergeData = [])
     {
         return view(
             $this->getViewUri($view),
@@ -153,9 +155,8 @@ class CrudController extends BaseController
     /**
      * Mostrando un listado de los registros de la tabla
      *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return string
      */
     public function index(Request $request)
     {
@@ -166,10 +167,10 @@ class CrudController extends BaseController
     /**
      * Muestra los detalles de un determinado recurso
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return string
      */
-    public function show($id)
+    public function show(int $id)
     {
         $modelObject = $this->modelClass::find($id);
         return $this->view('show', ['model' => $modelObject]);
@@ -178,7 +179,7 @@ class CrudController extends BaseController
     /**
      * Muestra el formulario para la creación de un registro
      * 
-     * @return \Illuminate\Http\Response
+     * @return string
      */
     public function create()
     {
@@ -191,10 +192,10 @@ class CrudController extends BaseController
     /**
      * Muestra el formulario para editar un determinado recurso
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return string
      */
-    public function edit($id)
+    public function edit(int $id)
     {
         $modelObject = $this->modelClass::find($id);
         return $this->view('edit', [
@@ -204,11 +205,11 @@ class CrudController extends BaseController
 
     /**
      * Realiza el almacenamiento del recurso tanto para edición como para creación de un recurso
-     * 
-     * @param \Illuminate\Http\Request $request Solicitud
-     * @param integer $id Entero con el identificador del recurso (si es edición)
-     * 
-     * @return \Illuminate\Http\Response
+     *
+     * @param Request $request Solicitud
+     * @param int|null $id Entero con el identificador del recurso (si es edición)
+     *
+     * @return Response
      */
     protected function saveResource(Request $request, int $id = null)
     {
@@ -225,7 +226,7 @@ class CrudController extends BaseController
         // Determinamos si no es un nuevo registro
         if (!$isNewResource) {
             $redirectRoute = 'edit';
-            $keyParam = Inflector::singularize(static::getBaseRouteName());
+            $keyParam = Str::singular(static::getBaseRouteName());
             $redirectParams = [(is_array($keyParam) ? end($keyParam) : $keyParam) => $modelObject->{$modelObject->getKeyName()}];
             $message = [
                 'title' => __('lcore::messages.commons.updatealerttitle'),
@@ -261,8 +262,8 @@ class CrudController extends BaseController
     /**
      * Almacena un nuevo registro.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -272,22 +273,22 @@ class CrudController extends BaseController
     /**
      * Actualiza un recurso específico
      *
-     * @param \Illuminate\Http\Request $request
-     * @param  integer $id
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param integer $id
+     * @return Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         return $this->saveResource($request, $id);
     }
 
     /**
      * Añade a la solicitud en mensaje de alerta a la sesión
-     * 
-     * @param string $type Tipo de alerta
+     *
      * @param array $message Arreglo con los datos del mensaje
+     * @param string $type Tipo de alerta
      */
-    protected function setFlashAlert($message, $type = 'success') {
+    protected function setFlashAlert(array $message, $type = 'success') {
         request()->session()->flash($this->keySessionMessage, [
             'type' => $type,
             'payload' => $message
@@ -296,12 +297,12 @@ class CrudController extends BaseController
 
     /**
      * Cambia el estado del recurso de activo a borrado y biseversa
-     * 
+     *
      * @param integer $id
-     * 
-     * @return \Illuminate\Http\Response
+     * @return Response
+     * @throws Exception
      */
-    protected function changeStatus($id)
+    protected function changeStatus(int $id)
     {
         $modelObject = $this->modelClass::withTrashed()->find($id);
         if ($modelObject->trashed()) {
@@ -327,10 +328,11 @@ class CrudController extends BaseController
     /**
      * Remueve un recurso específico
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return Response
+     * @throws Exception
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         return $this->changeStatus($id);
     }
@@ -338,10 +340,11 @@ class CrudController extends BaseController
     /**
      * Restaura un recurso en específico
      *
-     * @param integer $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return Response
+     * @throws Exception
      */
-    public function restore($id)
+    public function restore(int $id)
     {
         return $this->changeStatus($id);
     }
@@ -359,12 +362,11 @@ class CrudController extends BaseController
 
     /**
      * Realiza la redirección respectiva tomando en cuenta el parámetros back-url en caso de ser necesario
-     * 
-     * @param \Illuminate\Http\Response $response
-     * 
-     * @return \Illuminate\Http\Response
+     *
+     * @param Response|RedirectResponse $response
+     * @return Response
      */
-    protected function redirect($response)
+    protected function redirect(Response $response)
     {
         $redirectResponse = $response;
         $backUrl = request('back-url', null);

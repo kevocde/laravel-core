@@ -1,17 +1,17 @@
 <?php
 
-namespace Kevocode\LaravelCore;
+namespace Kevocde\LaravelCore;
 
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * ServiceProvider base para los paquetes que hereden de este
  *
- * @package Kevocode\LaravelCore
+ * @package Kevocde\LaravelCore
  * @author kevocode <kevindanielguzmen98@gmail.com>
  * @version 1.0.0
  */
-class BaseServiceProvider extends \Illuminate\Support\ServiceProvider
+class BaseServiceProvider extends ServiceProvider
 {
     /**
      * Nombre del paquete

@@ -1,10 +1,12 @@
 <?php
 
-namespace Kevocode\LaravelCore;
+namespace Kevocde\LaravelCore;
 
-use Kevocode\LaravelCore\Facades\LaravelCore;
 
-class LaravelCoreServiceProvider extends \Kevocode\LaravelCore\BaseServiceProvider
+use Appstract\BladeDirectives\BladeDirectivesServiceProvider;
+use MarvinLabs\Html\Bootstrap\BootstrapServiceProvider;
+
+class LaravelCoreServiceProvider extends BaseServiceProvider
 {
     protected $name = 'lcore';
     protected $withRoutes = false;
@@ -12,7 +14,7 @@ class LaravelCoreServiceProvider extends \Kevocode\LaravelCore\BaseServiceProvid
     protected $withFactories = false;
     protected $baseDir = __DIR__;
     protected $addicionalProvider = [
-        \MarvinLabs\Html\Bootstrap\BootstrapServiceProvider::class,
-        \Appstract\BladeDirectives\BladeDirectivesServiceProvider::class
+        BootstrapServiceProvider::class,
+        BladeDirectivesServiceProvider::class
     ];
 }
